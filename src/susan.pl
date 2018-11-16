@@ -4,5 +4,6 @@
 
 :- use_module(library(lists)).
 :- use_module(library(random)).
+:- use_module(library(system)).
 
-start :- start_game.
+play :- display_menu.

@@ -1,6 +1,6 @@
 /*funcoes 'porfazer' sao para depois se alterar para as funcoes esperadas das funcionalidades que faltam*/
 
-display_menu:-
+display_menu :-
   write('--------------------- Welcome to Susan ----------------------'),
   nl,
   nl,
@@ -16,12 +16,15 @@ display_menu:-
 
 
 choose_mode(X):-
-  X = 1, pvp_game;
-  X = 2, pvc_menu;
-  X = 3, cvc_menu;
-  X = 0, write('Exiting the game...').
+  X == 1, pvp_game;
+  X == 2, pvc_menu;
+  X == 3, cvc_menu;
+  X == 0, write('Exiting the game...').
+  
+pvp_game :-
+  start_game.
 
-pvc_menu:-
+pvc_menu :-
   nl,nl,
   write('Choose the computer level:'),nl,
   write('1) Easy'),nl,
@@ -29,9 +32,9 @@ pvc_menu:-
   write('--> '),
   read(X),
   (X \= 1, X \= 2), display_menu;
-  porfazer.
+  start_game.
 
-cvc_menu:-
+cvc_menu :-
   nl,nl,
   write('Choose the computer level:'),nl,
   write('1) Easy'),nl,
@@ -40,8 +43,8 @@ cvc_menu:-
   read(X1), nl,
   write('PC2 --> '),
   read(X2),nl,
-  ((X1 \= 1, X1 \= 2) ; (X2 \= 1, X2 \= 2)), display_menu;
-  porfazer.
+  ((X1 =\= 1, X1 =\= 2) ; (X2 =\= 1, X2 =\= 2)), display_menu;
+  start_game.
 
 
 porfazer :- write('to be done').
