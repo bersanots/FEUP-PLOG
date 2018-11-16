@@ -95,6 +95,7 @@ letter(6, 'F').
 letter(7, 'G').
 letter(8, 'H').
 letter(9, 'I').
+letter(0, _).
 
 /*numeros em cima e do lado direito*/
 num(N) :- N < 5, !, N1 is N+5, write('  '), write(N1).
