@@ -1,8 +1,12 @@
 start_game :-
+  display_menu.
+
+
+pvp_game:-
   initTab(InitialTab),
   display_game(InitialTab),
   game_cycle(InitialTab).
-  
+
 game_cycle(CurrentTab) :-
   ((playerX(CurrentTab, FirstNewTab),
   check_game_state(FirstNewTab),
@@ -14,14 +18,14 @@ game_cycle(CurrentTab) :-
   write('End of the game\n')));
   write('End of the game\n')).
 
-/*Player X turn*/  
+/*Player X turn*/
 playerX(CurrentTab, FirstNewTab) :-
   write('Choose an option:\n 1: Place a new piece\n 2: Move an existing piece\nOption: '),
   read(Option),
   moveX(CurrentTab, Option, FirstNewTab),
-  display_game(FirstNewTab).		
+  display_game(FirstNewTab).
 
-/*Player O turn*/  
+/*Player O turn*/
 playerO(FirstNewTab, SecondNewTab) :-
   write('Choose an option:\n 1: Place a new piece\n 2: Move an existing piece\nOption: '),
   read(Option),
@@ -29,7 +33,7 @@ playerO(FirstNewTab, SecondNewTab) :-
   display_game(SecondNewTab).
 
 /*place new player X piece*/
-moveX(Tab, 1, NewTab) :- 
+moveX(Tab, 1, NewTab) :-
   write('\nType the coordinates of an empty cell:\n'),
   write('Line [A-I]: '),
   read(NewLetter),
@@ -40,7 +44,7 @@ moveX(Tab, 1, NewTab) :-
   moveX(Tab, 1, NewTab)).
 
 /*move existing player X piece*/
-moveX(Tab, 2, NewTab) :- 
+moveX(Tab, 2, NewTab) :-
   write('\nType the coordinates of the piece to move:\n'),
   write('Line [A-I]: '),
   read(Letter),
@@ -60,7 +64,7 @@ moveX(Tab, 2, NewTab) :-
   moveX(Tab, 2, NewTab)).
 
 /*place new player O piece*/
-moveO(Tab, 1, NewTab) :- 
+moveO(Tab, 1, NewTab) :-
   write('\nType the coordinates of an empty cell:\n'),
   write('Line [A-I]: '),
   read(NewLetter),
@@ -69,9 +73,9 @@ moveO(Tab, 1, NewTab) :-
   read(NewColumn),
   (place_piece(Tab, NewTab, 2, NewLine, NewColumn);
   moveO(Tab, 1, NewTab)).
-  
+
 /*move existing player O piece*/
-moveO(Tab, 2, NewTab) :- 
+moveO(Tab, 2, NewTab) :-
   write('\nType the coordinates of the piece to move:\n'),
   write('Line [A-I]: '),
   read(Letter),           %só aceita a letra entre plicas
@@ -89,11 +93,11 @@ moveO(Tab, 2, NewTab) :-
   read(NewColumn),
   (place_piece(Tab, NewTab, 2, NewLine, NewColumn);
   moveO(Tab, 2, NewTab)).
-  
+
 check_game_state(Tab).	%ainda não está implementado
 
 /*place piece in new place*/
-place_piece(Tab, NewTab, Player, Line, Column) :- 
+place_piece(Tab, NewTab, Player, Line, Column) :-
   ((valid_cell(Tab, Line, Column),
   !,
   ((valid_player_piece(Tab, 0, Line, Column),	%check if cell is empty
@@ -103,7 +107,7 @@ place_piece(Tab, NewTab, Player, Line, Column) :-
   write('This cell is not empty!\n')).
 												/*DA PARA JUNTAR ESTAS DUAS?*/
 /*choose existing piece*/
-choose_piece(Tab, NewTab, Player, Line, Column) :- 
+choose_piece(Tab, NewTab, Player, Line, Column) :-
   ((valid_cell(Tab, Line, Column),
   !,
   ((valid_player_piece(Tab, Player, Line, Column),
@@ -112,27 +116,27 @@ choose_piece(Tab, NewTab, Player, Line, Column) :-
   write('Invalid cell position!\n')));
   write('The piece in this cell does not belong to this player!\n')).
 
-/*cell within the limits of the board*/  
-valid_cell(Tab, Line, Column) :-  
+/*cell within the limits of the board*/
+valid_cell(Tab, Line, Column) :-
   valid_line(Tab, Line, LineList),
   !,
   valid_column(LineList, Column).
-  
+
 valid_line(Tab, Line, LineList) :-
   length(Tab, Value),
   Line =< Value,
   !,
   get_line_list(Tab, Line, LineList).
-  
+
 valid_column(LineList, Column) :-
   length(LineList, Value),
   Column =< Value.
-  
+
 valid_player_piece(Tab, Player, Line, Column) :-
   get_line_list(Tab, Line, LineList),
   get_value(LineList, Column, Value),
   Value =:= Player.
-  
+
 /*get list from matrix*/
 get_line_list([H|_T], 1, H).
 
@@ -144,7 +148,7 @@ get_line_list([_H|T], Line, LineList) :-
 /*get value from list*/
 get_value([H|_T], 1, Value) :-
     Value = H.
-	
+
 get_value([_H|T], Column, Value) :-
   Column > 1,
   NextColumn is Column - 1,
@@ -158,11 +162,10 @@ insert_value([H|T], [H|NewT], Player, Line, Column) :-
   Line > 1,
   NextLine is Line - 1,
   insert_value(T, NewT, Player, NextLine, Column).
-  
+
 /*insert value in a list*/
 insert_in_list([_H|T], [Player|T], Player, 1).
 insert_in_list([H|T], [H|NewT], Player, Column) :-
     Column > 1,
     NextColumn is Column - 1,
     insert_in_list(T, NewT, Player, NextColumn).
-	
