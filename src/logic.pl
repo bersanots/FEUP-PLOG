@@ -1,67 +1,70 @@
-start_game :-
+start_game(PlayerType1, PlayerType2) :-
   initTab(InitialTab),
   InitialTab = Tab-Player,
   display_game(Tab),
   traduz(Player, P),
   write('\nPLAYER'), write(P) , write(' TURN\n'),
-  game_cycle(InitialTab).
-												/*Ver casos de condicoes em que um dos casos tem so uma ou duas linhas e meter noutra func com o mesmo nome*/
-game_cycle(CurrentTab) :-
-  (choose_option(Option),
-  CurrentTab = Tab-Player,
-  choose_cells(Tab, Option, Move, Player),
+  game_cycle(InitialTab, PlayerType1, PlayerType2).
+														
+game_cycle(CurrentTab, ActivePlayerType, NextPlayerType) :-
+  (CurrentTab = Tab-Player,
+  ActivePlayerType = PlayerType-Level,
+  ((PlayerType == 'H', choose_option(Option), choose_cells(Tab, Option, Move, Player));
+   choose_move(Tab, Level, Move, Player), sleep(1)),
   move(Move, Tab, Player, NewTab),!,
   display_game(NewTab), !,
   \+(game_over(NewTab-Player, Winner))) ->				/*FAZER CONDICAO DE EMPATE*/
    (((Player=:=1 -> NextPlayer is 2); NextPlayer is 1),
    traduz(NextPlayer, P),
    write('\nPLAYER'), write(P) , write(' TURN\n'),
-   game_cycle(NewTab-NextPlayer));
+   game_cycle(NewTab-NextPlayer, NextPlayerType, ActivePlayerType));
   (write('End of the game. The winner is PLAYER '), traduz(Winner, W), write(W)).
   
 choose_option(Option) :-
   write('\nChoose an option:\n 1: Place a new piece\n 2: Move an existing piece\nOption: '),
-  get_char(Option),		%aqui, fazer get_char com peek, se o user meter 1.1, com o peek ve-se se a seguir ao primeiro char vem newline ou nao (se nao vier, dar a msg de erro)
-  skip_line, write(Option),
-  (Option==1;Option==2);
-  (write('Choose a valid option!\n\n'),
-  choose_option(Option)).
+  retrieve_option(Option,1,2);	%Option==1 or Option==2
+  (write('Choose a valid option!\n\n'), choose_option(Option)).
   
 /*place new player piece*/
-choose_cells(Tab, 1, Move, _Player) :- 
+choose_cells(Tab, 1, Move, Player) :- 
   write('\nType the coordinates of an empty cell:\n'),
   write('Line [A-I]: '),
-  get_char(NewLetter),
-  skip_line,
-  letter(NewLine, NewLetter),
-  write('Column [1-9]: '),
-  get_char(NewColumn),
-  skip_line,
-  check_cell(Tab, 1, Move, 0, NewLine, NewColumn),		%check if cell is empty
-  (Move = NewLine+NewColumn; Move = _X+_Y).				%check if move is already defined
+  retrieve_line(NewLine),
+  (write('Column [1-9]: '),
+   retrieve_column(NewColumn),
+   (check_cell(Tab, 0, NewLine, NewColumn),						%check if cell is empty
+   (Move = NewLine+NewColumn; Move = _X+_Y);					%check if move is already defined, if not, define it
+    (write('This cell is either invalid or not empty!\n'), choose_cells(Tab, 1, Move, Player)));
+   (write('Choose a valid column!\n\n'), choose_cells(Tab, 1, Move, Player)));					
+  (write('Choose a valid line!\n'), choose_cells(Tab, 1, Move, Player)).
   
 /*move existing player piece*/
 choose_cells(Tab, 2, Move, Player) :- 
   write('\nType the coordinates of the piece to move:\n'),
   write('Line [A-I]: '),
-  get_char(Letter),
-  skip_line,
-  letter(Line, Letter),
-  write('Column [1-9]: '),
-  get_char(Column),
-  skip_line,
-  check_cell(Tab, 2, Move, Player, Line, Column),		%check if the piece on this cell belongs to the player
-  write('\nType the coordinates to where the piece should move:\n'),
-  write('Line [A-I]: '),
-  get_char(NewLetter),
-  skip_line,
-  letter(NewLine, NewLetter),
-  write('Column [1-9]: '),
-  get_char(NewColumn),
-  skip_line,
-  check_cell(Tab, 2, Move, 0, NewLine, NewColumn),			%check if cell is empty
-  neighbour_cell(Tab, Move, Line, Column, NewLine, NewColumn, Player),
-  (Move = Line+Column-NewLine+NewColumn; Move = _X+_Y-_A+_B).	%check if move is already defined
+  retrieve_line(Line),
+  (write('Column [1-9]: '),
+   retrieve_column(Column),
+   (check_cell(Tab, Player, Line, Column), 	 				%check if the piece on this cell belongs to the player
+    (write('\nType the coordinates to where the piece should move:\n'),
+	 write('Line [A-I]: '),
+     retrieve_line(NewLine),
+     (write('Column [1-9]: '),
+	  retrieve_column(NewColumn),
+      ((check_cell(Tab, 0, NewLine, NewColumn), !,					%check if cell is empty
+       neighbour_cell(Tab, Move, Line, Column, NewLine, NewColumn, Player)),
+       (Move = Line+Column-NewLine+NewColumn; Move = _X+_Y-_A+_B);					%check if move is already defined, if not, define it
+	   (write('This cell is either invalid or not empty!\n'), choose_cells(Tab, 2, Move, Player)));
+	  (write('Choose a valid column!\n'), choose_cells(Tab, 2, Move, Player)));
+	 (write('Choose a valid line!\n'), choose_cells(Tab, 2, Move, Player)));
+    (write('This cell is either invalid or does not contain a piece from this Player!\n'), choose_cells(Tab, 2, Move, Player)));
+   (write('Choose a valid column!\n'), choose_cells(Tab, 2, Move, Player)));			
+  (write('Choose a valid line!\n'), choose_cells(Tab, 2, Move, Player)).
+  
+/*choose computer's move*/
+choose_move(Board, Level, Move, Player) :-
+  Move = 5+5,
+  write('\nfez isto\n').
   
 move(Move, Board, Player, NewBoard) :-
   (Move = X+Y-A+B,										%move piece from X,Y to A,B
@@ -91,23 +94,23 @@ has_pieces_surrounded(Tab, Line, Column, Player) :-
   (\+(valid_player_piece(Tab, Player, Line, Column)) ->		%if piece doesn't belong to the player, advance to next cell
    has_pieces_surrounded(Tab, NextLine, NextColumn, Player);
   ((surrounding_cells(Tab, Line, Column, Cells, 6), !,			
-   \+(none_empty(Tab, Cells))) ->
+   \+(all_filled(Tab, Cells))) ->							%at least one empty cell
     has_pieces_surrounded(Tab, NextLine, NextColumn, Player); true)).
   
-none_empty(_Tab, []).  
+all_filled(_Tab, []).  
   
 /*check if all the cells in the list have a piece*/
-none_empty(Tab, [H|T]) :-
+all_filled(Tab, [H|T]) :-
   H = Line+Column,
   \+(valid_player_piece(Tab, 0, Line, Column)),		%not empty
-  none_empty(Tab, T).
+  all_filled(Tab, T).
 
 /*check if a cell is neighbour of another cell*/
 neighbour_cell(Tab, Move, Line, Column, NewLine, NewColumn, Player) :-
-  (surrounding_cells(Tab, Line, Column, Cells, 6),					%get a list of the surrounding cells, maximum of 6
-  select(NewLine+NewColumn, Cells, _Residue));						%check if the cell on (NewLine,NewColumn) belongs to the calculated list
+  surrounding_cells(Tab, Line, Column, Cells, 6), !,				%get a list of the surrounding cells, maximum of 6
+  (select(NewLine+NewColumn, Cells, _Residue);						%check if the cell on (NewLine,NewColumn) belongs to the calculated list
   (write('This cell is not a neighbour of the previous one!\n'),
-  choose_cells(Tab, 2, Move, Player)).
+  choose_cells(Tab, 2, Move, Player))).
   
 surrounding_cells(_Tab, _Line, _Column, _Cells, 0).
   
@@ -154,15 +157,10 @@ surrounding_cells(Tab, Line, Column, Cells, MaxCells) :-
   (surrounding_cells(Tab, Line, Column, AddCells, NextMax),
    append(AddCells, [], Cells))).
 
-/*check if cell exists and is available*/
-check_cell(Tab, Option, Move, Player, Line, Column) :- 
-  (valid_cell(Tab, Line, Column)
-  ->
-  (valid_player_piece(Tab, Player, Line, Column);							
-  (write('The piece in this cell does not belong to this player!\n'),
-  choose_cells(Tab, Option, Move, Player))));
-  (write('Invalid cell position!\n'),
-  choose_cells(Tab, Option, Move, Player)).
+/*check if cell exists and is filled with a Player's piece*/
+check_cell(Tab, Player, Line, Column) :- 
+  valid_cell(Tab, Line, Column), !,
+  valid_player_piece(Tab, Player, Line, Column).
 
 /*cell within the limits of the board*/  
 valid_cell(Tab, Line, Column) :-  
