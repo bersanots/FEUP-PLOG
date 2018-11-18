@@ -24,7 +24,7 @@ initTab([[0,0,0,0,0],
  midTab([[0,0,0,0,0],
          [0,0,0,0,0,0],
          [0,0,0,0,0,0,0],
-         [0,0,0,0,0,0,0,0],	
+         [0,0,0,0,2,2,0,0],	
          [0,0,0,2,2,1,0,0,0],
          [0,0,2,0,2,1,0,0],				/*APAGAR ESTAS DUAS*/
          [0,0,0,1,1,0,0],
@@ -78,12 +78,12 @@ print_line([C|L]):-
 
 print_cell(C):-
   traduz(C,V),
+  write(' '),
   write(V).
 
-traduz(0,'  ').
-traduz(1,' X').
-traduz(2,' O').
-traduz(X,X).
+traduz(0,' ').
+traduz(1,'X').
+traduz(2,'O').
 
 /*letras no lado esquerdo*/
 letter(1, 'A').

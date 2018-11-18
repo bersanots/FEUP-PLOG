@@ -3,22 +3,23 @@ start_game(PlayerType1, PlayerType2) :-
   InitialTab = Tab-Player,
   display_game(Tab),
   traduz(Player, P),
-  write('\nPLAYER'), write(P) , write(' TURN\n'),
+  write('\nPLAYER '), write(P) , write(' TURN\n'),
   game_cycle(InitialTab, PlayerType1, PlayerType2).
 														
 game_cycle(CurrentTab, ActivePlayerType, NextPlayerType) :-
   (CurrentTab = Tab-Player,
-  ActivePlayerType = PlayerType-Level,
-  ((PlayerType == 'H', choose_option(Option), choose_cells(Tab, Option, Move, Player));
-   choose_move(Tab, Level, Move, Player), sleep(1)),
-  move(Move, Tab, Player, NewTab),!,
-  display_game(NewTab), !,
-  \+(game_over(NewTab-Player, Winner))) ->				/*FAZER CONDICAO DE EMPATE*/
-   (((Player=:=1 -> NextPlayer is 2); NextPlayer is 1),
-   traduz(NextPlayer, P),
-   write('\nPLAYER'), write(P) , write(' TURN\n'),
-   game_cycle(NewTab-NextPlayer, NextPlayerType, ActivePlayerType));
-  (write('End of the game. The winner is PLAYER '), traduz(Winner, W), write(W)).
+   ActivePlayerType = PlayerType-Level,
+   ((PlayerType == 'H', choose_option(Option), choose_cells(Tab, Option, Move, Player));
+    ((choose_move(Tab, Level, Move, Player);true),
+	  write('\nPress ENTER to continue...'), get_char(_), skip_line)),
+   move(Move, Tab, Player, NewTab),
+   display_game(NewTab)), !,
+   ((game_over(NewTab-Player, Winner),
+    (write('End of the game. The winner is PLAYER '), traduz(Winner, W), write(W)));  
+    (((Player=:=1, NextPlayer is 2); NextPlayer is 1),
+     traduz(NextPlayer, P),
+     write('\nPLAYER '), write(P) , write(' TURN\n'),
+     game_cycle(NewTab-NextPlayer, NextPlayerType, ActivePlayerType))).
   
 choose_option(Option) :-
   write('\nChoose an option:\n 1: Place a new piece\n 2: Move an existing piece\nOption: '),
@@ -61,10 +62,14 @@ choose_cells(Tab, 2, Move, Player) :-
    (write('Choose a valid column!\n'), choose_cells(Tab, 2, Move, Player)));			
   (write('Choose a valid line!\n'), choose_cells(Tab, 2, Move, Player)).
   
-/*choose computer's move*/
-choose_move(Board, Level, Move, Player) :-
-  Move = 5+5,
-  write('\nfez isto\n').
+/*choose random computer's move*/
+choose_move(Board, 1, Move, Player) :-
+  valid_moves(Board, Player, ListOfMoves),
+  random_member(Move, ListOfMoves).
+  
+/*choose best possible computer's move*/
+choose_move(Board, 2, Move, Player) :-
+  best_move(Board, Player, Move).
   
 move(Move, Board, Player, NewBoard) :-
   (Move = X+Y-A+B,										%move piece from X,Y to A,B
@@ -76,26 +81,26 @@ move(Move, Board, Player, NewBoard) :-
 /*check is the player's move made him or the opponent lose*/ 
 game_over(Board, Winner) :-
   Board = Tab-Player,
-  (Player =:= 1,
-   ((has_pieces_surrounded(Tab, 1, 1, 1) -> Winner is 2);
-    (has_pieces_surrounded(Tab, 1, 1, 2) -> Winner is 1));
+ ((Player =:= 1,
+   ((has_pieces_surrounded(Tab, 1, 1, 1), Winner is 2);		%start searching on cell (1,1) for Player 1
+    (has_pieces_surrounded(Tab, 1, 1, 2), Winner is 1)));	%start searching on cell (1,1) for Player 2
   (Player =:= 2,
-    ((has_pieces_surrounded(Tab, 1, 1, 2) -> Winner is 1);
-	 (has_pieces_surrounded(Tab, 1, 1, 1) -> Winner is 2)))).
+   ((has_pieces_surrounded(Tab, 1, 1, 2), Winner is 1);		%start searching on cell (1,1) for Player 2
+    (has_pieces_surrounded(Tab, 1, 1, 1), Winner is 2)))).	%start searching on cell (1,1) for Player 1
   
-/*check if a player has pieces that can't move*/
-has_pieces_surrounded(Tab, Line, Column, Player) :-
+/*check if a player has pieces that can't move, starting on cell (Line,Column)*/
+has_pieces_surrounded(Tab, Line, Column, Player) :- 
   length(Tab, LineLength),
   Line =< LineLength,
   AuxColumn is Column + 1,
-  (valid_cell(Tab, Line, AuxColumn) ->
-   (NextLine is Line, NextColumn is Column + 1);
+  ((valid_cell(Tab, Line, AuxColumn),
+   (NextLine is Line, NextColumn is Column + 1));
    (NextLine is Line + 1, NextColumn is 1)), !,
-  (\+(valid_player_piece(Tab, Player, Line, Column)) ->		%if piece doesn't belong to the player, advance to next cell
-   has_pieces_surrounded(Tab, NextLine, NextColumn, Player);
-  ((surrounding_cells(Tab, Line, Column, Cells, 6), !,			
-   \+(all_filled(Tab, Cells))) ->							%at least one empty cell
-    has_pieces_surrounded(Tab, NextLine, NextColumn, Player); true)).
+  ((valid_player_piece(Tab, Player, Line, Column), !,			%check if piece belongs to the player
+   (surrounding_cells(Tab, Line, Column, Cells, 6), !,			
+   (all_filled(Tab, Cells);										%at least one empty cell
+    has_pieces_surrounded(Tab, NextLine, NextColumn, Player))));
+  has_pieces_surrounded(Tab, NextLine, NextColumn, Player)).
   
 all_filled(_Tab, []).  
   
@@ -112,7 +117,7 @@ neighbour_cell(Tab, Move, Line, Column, NewLine, NewColumn, Player) :-
   (write('This cell is not a neighbour of the previous one!\n'),
   choose_cells(Tab, 2, Move, Player))).
   
-surrounding_cells(_Tab, _Line, _Column, _Cells, 0).
+surrounding_cells(_Tab, _Line, _Column, [], 0).
   
 /*calculate and save on a list the coordinates (format X+Y) of the cells surrounding a certain cell*/
 surrounding_cells(Tab, Line, Column, Cells, MaxCells) :-
@@ -151,7 +156,7 @@ surrounding_cells(Tab, Line, Column, Cells, MaxCells) :-
        TestLine is Line + 1,
        TestColumn is Column - 1)))))),
   NextMax is MaxCells - 1,
-  ((valid_cell(Tab, TestLine, TestColumn) ->
+  ((valid_cell(Tab, TestLine, TestColumn),
    surrounding_cells(Tab, Line, Column, AddCells, NextMax),
    append(AddCells, [TestLine+TestColumn], Cells));
   (surrounding_cells(Tab, Line, Column, AddCells, NextMax),
@@ -164,8 +169,7 @@ check_cell(Tab, Player, Line, Column) :-
 
 /*cell within the limits of the board*/  
 valid_cell(Tab, Line, Column) :-  
-  valid_line(Tab, Line, LineList),
-  !,
+  valid_line(Tab, Line, LineList), !,
   valid_column(LineList, Column).
   
 valid_line(Tab, Line, LineList) :-
@@ -185,37 +189,4 @@ valid_player_piece(Tab, Player, Line, Column) :-
   get_line_list(Tab, Line, LineList),
   get_value(LineList, Column, Value),
   Value =:= Player.
-  
-/*get list from matrix*/
-get_line_list([H|_T], 1, H).
-
-get_line_list([_H|T], Line, LineList) :-
-  Line > 1,
-  NextLine is Line - 1,
-  get_line_list(T, NextLine, LineList).
-
-/*get value from list*/
-get_value([H|_T], 1, Value) :-
-    Value = H.
-	
-get_value([_H|T], Index, Value) :-
-  Index > 1,
-  NextIndex is Index - 1,
-  get_value(T, NextIndex, Value).
-
-/*insert player symbol on the board*/
-insert_value([H|T], [NewH|T], Player, 1, Column) :-
-  insert_in_list(H, NewH, Player, Column).
-
-insert_value([H|T], [H|NewT], Player, Line, Column) :-
-  Line > 1,
-  NextLine is Line - 1,
-  insert_value(T, NewT, Player, NextLine, Column).
-  
-/*insert value in a list*/
-insert_in_list([_H|T], [Player|T], Player, 1).
-insert_in_list([H|T], [H|NewT], Player, Index) :-
-    Index > 1,
-    NextIndex is Index - 1,
-    insert_in_list(T, NewT, Player, NextIndex).
-	
+ 
