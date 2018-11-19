@@ -29,10 +29,10 @@
 - [x] Computador VS Computador.
 
 #### Lógica de Jogo
-- [ ] Fazer condição de empate.
+- [x] Fazer condição de empate.
 - [x] Fazer função para lista de movimentos válidos de uma peça.
 - [x] Fazer função para lista de jogadas possíveis/válidas.
-- [ ] Apresentar mensagem se o jogador não tiver peças para mover.
+- [x] Apresentar mensagem se o jogador não tiver peças para mover.
 - [ ] Apresentar o número certo de colunas possíveis para cada linha escolhida.
 - [ ] Usar between e findall no has_pieces_surrounded.
 - [x] Condição de terminação não funciona com move.

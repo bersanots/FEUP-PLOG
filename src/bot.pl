@@ -14,10 +14,10 @@ valid_moves(Board, Player, ListOfMoves) :-
 			          Elem = A+B,
 			          check_cell(Board, 0, A, B)),
 			         To)),
-		  MovePiece),
-  maplist(distribute_moves, MovePiece, MovePieceDistributed),
-  concat(MovePieceDistributed, MovePieceConcat),
-  append(PlacePiece, MovePieceConcat, ListOfMoves).
+		  SlidePiece),
+  maplist(distribute_moves, SlidePiece, SlidePieceDistributed),
+  concat(SlidePieceDistributed, SlidePieceConcat),
+  append(PlacePiece, SlidePieceConcat, ListOfMoves).
 
 /*create moves from the format Move-[List of Moves]*/
 distribute_moves(_Move-[], []).

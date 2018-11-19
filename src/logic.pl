@@ -4,25 +4,29 @@ start_game(PlayerType1, PlayerType2) :-
   display_game(Tab),
   traduz(Player, P),
   write('\nPLAYER '), write(P) , write(' TURN\n'),
-  game_cycle(InitialTab, PlayerType1, PlayerType2).
+  game_cycle(InitialTab, PlayerType1, PlayerType2, 0).
 														
-game_cycle(CurrentTab, ActivePlayerType, NextPlayerType) :-
+game_cycle(CurrentTab, ActivePlayerType, NextPlayerType, DrawCount) :-
   (CurrentTab = Tab-Player,
    ActivePlayerType = PlayerType-Level,
-   ((PlayerType == 'H', choose_option(Option), choose_cells(Tab, Option, Move, Player));
+   ((PlayerType == 'H',
+    ((\+is_board_empty(Tab), choose_option(Option));true),
+    choose_cells(Tab, Option, Move, Player));
     ((choose_move(Tab, Level, Move, Player);true),
 	  write('\nPress ENTER to continue...'), get_char(_), skip_line)),
    move(Move, Tab, Player, NewTab),
+   ((Move = _X+_Y-_A+_B, NextCount is DrawCount + 1); NextCount is 0),			%check if a piece was slided or placed
    display_game(NewTab)), !,
-   ((game_over(NewTab-Player, Winner),
-    (write('End of the game. The winner is PLAYER '), traduz(Winner, W), write(W)));  
+   ((game_over(NewTab-Player, Winner, NextCount),
+    ((Winner =:= 0, write('Pieces were slided for six turns in a row. The game ended in a DRAW.'));
+     (write('End of the game. The winner is PLAYER '), traduz(Winner, W), write(W))));  
     (((Player=:=1, NextPlayer is 2); NextPlayer is 1),
      traduz(NextPlayer, P),
      write('\nPLAYER '), write(P) , write(' TURN\n'),
-     game_cycle(NewTab-NextPlayer, NextPlayerType, ActivePlayerType))).
+     game_cycle(NewTab-NextPlayer, NextPlayerType, ActivePlayerType, NextCount))).
   
 choose_option(Option) :-
-  write('\nChoose an option:\n 1: Place a new piece\n 2: Move an existing piece\nOption: '),
+  write('\nChoose an option:\n 1: Place a new piece\n 2: Slide an existing piece\nOption: '),
   retrieve_option(Option,1,2);	%Option==1 or Option==2
   (write('Choose a valid option!\n\n'), choose_option(Option)).
   
@@ -39,15 +43,15 @@ choose_cells(Tab, 1, Move, Player) :-
    (write('Choose a valid column!\n\n'), choose_cells(Tab, 1, Move, Player)));					
   (write('Choose a valid line!\n'), choose_cells(Tab, 1, Move, Player)).
   
-/*move existing player piece*/
+/*slide existing player piece*/
 choose_cells(Tab, 2, Move, Player) :- 
-  write('\nType the coordinates of the piece to move:\n'),
+  write('\nType the coordinates of the piece to slide:\n'),
   write('Line [A-I]: '),
   retrieve_line(Line),
   (write('Column [1-9]: '),
    retrieve_column(Column),
    (check_cell(Tab, Player, Line, Column), 	 				%check if the piece on this cell belongs to the player
-    (write('\nType the coordinates to where the piece should move:\n'),
+    (write('\nType the coordinates to where the piece should slide:\n'),
 	 write('Line [A-I]: '),
      retrieve_line(NewLine),
      (write('Column [1-9]: '),
@@ -72,19 +76,28 @@ choose_move(Board, 2, Move, Player) :-
   best_move(Board, Player, Move).
   
 move(Move, Board, Player, NewBoard) :-
-  (Move = X+Y-A+B,										%move piece from X,Y to A,B
+  (Move = X+Y-A+B,										%slide piece from X,Y to A,B
   insert_value(Board, AuxBoard, 0, X, Y),				%empty the original cell
   insert_value(AuxBoard, NewBoard, Player, A, B));		
   (Move = A+B,											%place new piece on cell A,B
   insert_value(Board, NewBoard, Player, A, B)).			
  
-/*check is the player's move made him or the opponent lose*/ 
-game_over(Board, Winner) :-
+/*check if the player's move made him win, lose, or the match ended in a draw*/ 
+game_over(Board, Winner, DrawCount) :-
   Board = Tab-Player,
   ((Player =:= 1, OtherPlayer is 2); OtherPlayer is 1),
-  value(Tab, Player, Value), !,
-  ((Value =:= 0, Winner is OtherPlayer);		%has a surrounded piece
-   (Value =:= 7, Winner is Player)).			%surrounded an opponent's piece
+  ((DrawCount =:= 6, Winner is 0);				%players slided pieces 6 times in a row
+   (value(Tab, Player, Value), !,
+   ((Value =:= 0, Winner is OtherPlayer);		%has a surrounded piece
+    (Value =:= 7, Winner is Player)))).			%surrounded an opponent's piece
+	
+is_board_empty(Board) :-
+  findall(Line+Column,											%find all non empty cells
+			(between(1,9,Line), between(1,9,Column),
+			(check_cell(Board, 1, Line, Column);
+			 check_cell(Board, 2, Line, Column))), 					
+          FilledCells), !,
+  length(FilledCells, 0).
   
 min_empty_surr_cells(_Tab, 10, _Column, _Player, 6).
   
@@ -189,6 +202,6 @@ valid_column(LineList, Column) :-
 /*check if piece in (Line, Column) belongs to Player*/
 valid_player_piece(Tab, Player, Line, Column) :-
   get_line_list(Tab, Line, LineList),
-  get_value(LineList, Column, Value),
+  get_value(LineList, Column, Value), !,
   Value =:= Player.
  
