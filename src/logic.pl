@@ -81,34 +81,36 @@ move(Move, Board, Player, NewBoard) :-
 /*check is the player's move made him or the opponent lose*/ 
 game_over(Board, Winner) :-
   Board = Tab-Player,
- ((Player =:= 1,
-   ((has_pieces_surrounded(Tab, 1, 1, 1), Winner is 2);		%start searching on cell (1,1) for Player 1
-    (has_pieces_surrounded(Tab, 1, 1, 2), Winner is 1)));	%start searching on cell (1,1) for Player 2
-  (Player =:= 2,
-   ((has_pieces_surrounded(Tab, 1, 1, 2), Winner is 1);		%start searching on cell (1,1) for Player 2
-    (has_pieces_surrounded(Tab, 1, 1, 1), Winner is 2)))).	%start searching on cell (1,1) for Player 1
+  ((Player =:= 1, OtherPlayer is 2); OtherPlayer is 1),
+  value(Tab, Player, Value), !,
+  ((Value =:= 0, Winner is OtherPlayer);		%has a surrounded piece
+   (Value =:= 7, Winner is Player)).			%surrounded an opponent's piece
   
-/*check if a player has pieces that can't move, starting on cell (Line,Column)*/
-has_pieces_surrounded(Tab, Line, Column, Player) :- 
-  length(Tab, LineLength),
-  Line =< LineLength,
+min_empty_surr_cells(_Tab, 10, _Column, _Player, 6).
+  
+/*find the Player's piece with the least amount of empty surrounding cells,
+starting on cell (Line,Column), and return that amount*/
+min_empty_surr_cells(Tab, Line, Column, Player, Min) :- 
   AuxColumn is Column + 1,
   ((valid_cell(Tab, Line, AuxColumn),
    (NextLine is Line, NextColumn is Column + 1));
    (NextLine is Line + 1, NextColumn is 1)), !,
   ((valid_player_piece(Tab, Player, Line, Column), !,			%check if piece belongs to the player
    (surrounding_cells(Tab, Line, Column, Cells, 6), !,			
-   (all_filled(Tab, Cells);										%at least one empty cell
-    has_pieces_surrounded(Tab, NextLine, NextColumn, Player))));
-  has_pieces_surrounded(Tab, NextLine, NextColumn, Player)).
+    num_empty_cells(Tab, Cells, Num),						%number of cells left to fill
+    min_empty_surr_cells(Tab, NextLine, NextColumn, Player, Next),
+	((Num < Next, Min is Num); Min is Next)));
+   min_empty_surr_cells(Tab, NextLine, NextColumn, Player, Min)).
+    
+num_empty_cells(_Tab, [], 0).  
   
-all_filled(_Tab, []).  
-  
-/*check if all the cells in the list have a piece*/
-all_filled(Tab, [H|T]) :-
+/*calculate how many cells from a list are empty*/
+num_empty_cells(Tab, [H|T], Num) :-
   H = Line+Column,
-  \+(valid_player_piece(Tab, 0, Line, Column)),		%not empty
-  all_filled(Tab, T).
+  (\+(valid_player_piece(Tab, 0, Line, Column)),		%not empty
+   num_empty_cells(Tab, T, Num));
+   (num_empty_cells(Tab, T, AddNum),
+    Num is AddNum + 1).
 
 /*check if a cell is neighbour of another cell*/
 neighbour_cell(Tab, Move, Line, Column, NewLine, NewColumn, Player) :-
@@ -160,12 +162,12 @@ surrounding_cells(Tab, Line, Column, Cells, MaxCells) :-
    surrounding_cells(Tab, Line, Column, AddCells, NextMax),
    append(AddCells, [TestLine+TestColumn], Cells));
   (surrounding_cells(Tab, Line, Column, AddCells, NextMax),
-   append(AddCells, [], Cells))).
+   append(AddCells, [], Cells))), !.
 
 /*check if cell exists and is filled with a Player's piece*/
 check_cell(Tab, Player, Line, Column) :- 
   valid_cell(Tab, Line, Column), !,
-  valid_player_piece(Tab, Player, Line, Column).
+  valid_player_piece(Tab, Player, Line, Column), !.
 
 /*cell within the limits of the board*/  
 valid_cell(Tab, Line, Column) :-  

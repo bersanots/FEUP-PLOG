@@ -25,8 +25,8 @@
 
 #### Tipos de Jogo
 - [x] Player VS Player.
-- [ ] Player VS Computador.
-- [ ] Computador VS Computador.
+- [x] Player VS Computador.
+- [x] Computador VS Computador.
 
 #### Lógica de Jogo
 - [ ] Fazer condição de empate.
@@ -38,8 +38,11 @@
 - [x] Condição de terminação não funciona com move.
 
 ### Computer
-- [ ] Bot não está a gerar todos os moves, só faz movimentos para a primeira ocorrência.
+- [x] Bot não está a gerar todos os moves, só faz movimentos para a primeira ocorrência.
 - [x] Bot nem sempre faz bem os values das jogadas.
-- [ ] Fazer função de avaliação do tabuleiro.
+- [x] Fazer função de avaliação do tabuleiro.
+- [ ] Fazer uma melhor função de avaliação do tabuleiro, meter o bot menos ofensivo, dar value a jogadas que reduzam o seu min_empty_surr_cells
+       (IDEIA: Comparar o value de uma jogada defensiva, geralmente um move, com uma ofensiva, fazer a de maior valor).
 - [x] Fazer função de avaliação de uma jogada, através da avaliação do estado do tabuleiro se essa jogada for escolhida.
 - [x] Fazer função de escolha da jogada do computador, dependendo do nível de dificuldade.
+- [ ] Pensar nos casos em que jogar na primeira ocorrência tem o mesmo min_empty_surr_cells de jogar junto a outra peça, mas neste último reduz-se o segundo menor empty_surr_cells.
