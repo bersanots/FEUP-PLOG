@@ -1,20 +1,26 @@
+/*read letter from user's input to get a line*/
 retrieve_line(Line) :-
   get_char(Letter),
   peek_char(NextLineChar),
   skip_line, !,
   NextLineChar=='\n',
-  letter(Line, Letter).
+  letter(Line, Letter).						%Letter between A-I -> Line between 1-9		
   
+  
+/*read number from user's input to get a column*/
 retrieve_column(Column) :-
   get_char(ColChar),
   char_code(ColChar, ColCode), !,
-  (between(49,57,ColCode), !,						%Column between 1-9
+  (between(49,57,ColCode), !,				%Column between 1-9
   (number_chars(Column, [ColChar]),
    peek_char(NextColChar),
    skip_line);
   skip_line),
   NextColChar=='\n'.
    
+   
+/*read number from user's input
+to get an option choice between Min and Max*/
 retrieve_option(Option, Min, Max) :-
   get_char(Char),
   char_code(Char, Code),

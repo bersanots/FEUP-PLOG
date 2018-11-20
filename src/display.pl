@@ -1,4 +1,4 @@
-/*---------Representacao do jogo-------------------
+/*---------Game notation-------------------
 a     1 2 3 4 5
 b    1 2 3 4 5 6
 c   1 2 3 4 5 6 7
@@ -10,6 +10,7 @@ h    1 2 3 4 5 6
 i     1 2 3 4 5
 */
 
+/*initial empty board*/
 initTab([[0,0,0,0,0],
          [0,0,0,0,0,0],
          [0,0,0,0,0,0,0],
@@ -21,31 +22,9 @@ initTab([[0,0,0,0,0],
          [0,0,0,0,0]
 ]-1).
 
- midTab([[0,0,0,0,0],
-         [0,0,0,0,0,0],
-         [0,0,0,0,0,0,0],
-         [0,0,0,0,2,2,0,0],	
-         [0,0,0,2,2,1,0,0,0],
-         [0,0,2,0,2,1,0,0],				/*APAGAR ESTAS DUAS*/
-         [0,0,0,1,1,0,0],
-         [0,0,0,0,0,0],
-         [0,0,0,0,0]
-]-1).
-
-endTab([[0,0,0,0,0],
-        [0,0,0,0,0,0],
-        [0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0],
-        [0,0,0,2,2,1,0,0,0],
-        [0,0,2,1,2,1,0,0],
-        [0,0,0,1,1,0,0],
-        [0,0,0,0,0,0],
-        [0,0,0,0,0]
-]-2).
 
 
-
-/*---------Display jogo-------------------*/
+/*---------Game display on screen-------------------*/
 display_game(X):- 
   nl,
   write('             | 1 | 2 | 3 | 4 | 5 |'),
@@ -77,15 +56,17 @@ print_line([C|L]):-
   print_line(L).
 
 print_cell(C):-
-  traduz(C,V),
+  translate(C,V),
   write(' '),
   write(V).
+  
+  
+/*number to symbol conversion*/
+translate(0,' ').
+translate(1,'X').
+translate(2,'O').
 
-traduz(0,' ').
-traduz(1,'X').
-traduz(2,'O').
-
-/*letras no lado esquerdo*/
+/*letters on the left side*/
 letter(1, 'A').
 letter(2, 'B').
 letter(3, 'C').
@@ -97,12 +78,12 @@ letter(8, 'H').
 letter(9, 'I').
 letter(0, _).
 
-/*numeros em cima e do lado direito*/
+/*numbers on top and on the right side*/
 num(N) :- N < 5, !, N1 is N+5, write('  '), write(N1).
 num(_).
 
 
-/*limites superior e inferior de cada celula em forma de hexagono*/
+/*hexagon shaped cell limits*/
 hexagon(1) :- write('---         / \\ / \\ / \\ / \\ / \\ /').
 hexagon(2) :- write('---       / \\ / \\ / \\ / \\ / \\ / \\ /').
 hexagon(3) :- write('---     / \\ / \\ / \\ / \\ / \\ / \\ / \\ /').
@@ -113,7 +94,7 @@ hexagon(7) :- write('---   \\ / \\ / \\ / \\ / \\ / \\ / \\ / \\ /').
 hexagon(8) :- write('---     \\ / \\ / \\ / \\ / \\ / \\ / \\ /').
 hexagon(9) :- write('---       \\ / \\ / \\ / \\ / \\ / \\ /').
 
-/*espaços entre as letras e o tabuleiro*/
+/*spaces between the letters and the board*/
 line_space(1) :- write('       |').
 line_space(2) :- write('     |').
 line_space(3) :- write('   |').

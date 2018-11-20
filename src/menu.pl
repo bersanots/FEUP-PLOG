@@ -58,6 +58,4 @@ cvc_menu :-
    (nl, start_game('C'-X1, 'C'-X2));
    (write('\nInvalid option!\n'), cvc_menu));
   (write('\nInvalid option!\n'), cvc_menu).
-
-
-porfazer :- write('to be done').
+  
