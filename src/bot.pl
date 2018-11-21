@@ -30,33 +30,28 @@ distribute_moves(Move-[H|T], Result) :-
   append([Move-A+B], NewResult, Result).
   
   
-/*concatenate lists inside a list*/
-concat([],[]).
-concat([H|T],L) :-
-    concat(T,L2),
-	append(H,L2,L).
-  
-  
 /*find the move that will make the Player 
 closer to winning or further from losing*/
-best_move(Board, Player, Move) :-
+best_move(Board, Level, Player, Move) :-
   valid_moves(Board, Player, ListOfMoves),
   findall(Value,								%calculate values for each possible new board
         (length(ListOfMoves,Length),
 		 between(1,Length,Index),
 		 nth1(Index, ListOfMoves, Elem),
 		 move(Elem, Board, Player, NewBoard),	%simulate the boards resulting of each possible move
-		 value(NewBoard, Player, Value)),		
+		 value(NewBoard, Level, Player, Value)),		
 	    MovesValues),
   max_member(MaxVal, MovesValues),
   nth1(Index, MovesValues, MaxVal),
   nth1(Index, ListOfMoves, Move).
   
   
-/*evaluate the board, depending on the balance between the player's and 
-the opponent's piece that are the closest to being surrounded*/
- value(Board, Player, Value) :-
+/*evaluate the board, depending on the the player's or
+the opponent's piece that is the closest to being surrounded*/
+ value(Board, Level, Player, Value) :-
   ((Player =:= 1, OtherPlayer is 2); OtherPlayer is 1),
    min_empty_surr_cells(Board, Player, NDef),
    min_empty_surr_cells(Board, OtherPlayer, NOff),
-  ((NDef =:= 0, Value is 0); (NOff =:= 0, Value is 11); Value is NDef - NOff + 6), !.	%lost, won, or calculate the difference between the defensive and offensive move value 
+  ((NDef =:= 0, Value is 0);																%lost
+  ((Level =:= 0; Level =:= 1; Level =:= 2), Value is 7 - NOff);			%move value is the offensive value (move value range 0->7)
+  (Level =:= 3, ((NOff =:= 0, Value is 11); (Value is NDef - NOff + 6)))), !.	%move value is the difference between the defensive and offensive move value (move value range 0->11)

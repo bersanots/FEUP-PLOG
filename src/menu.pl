@@ -30,9 +30,10 @@ pvc_menu :-
   nl,nl,
   write('Choose the computer level:'),nl,
   write('1) Easy'),nl,
-  write('2) Hard'),nl,
+  write('2) Medium'),nl,
+  write('3) Hard'),nl,
   write('--> '),
-  retrieve_option(X, 1, 2),		%Option 1 or 2
+  retrieve_option(X, 1, 3),		%Option 1 to 3
   start_game('H'-0, 'C'-X);
   (write('\nInvalid option!\n'), pvc_menu).
   
@@ -40,9 +41,10 @@ cvp_menu :-
   nl,nl,
   write('Choose the computer level:'),nl,
   write('1) Easy'),nl,
-  write('2) Hard'),nl,
+  write('2) Medium'),nl,
+  write('3) Hard'),nl,
   write('--> '),
-  retrieve_option(X, 1, 2),		%Option 1 or 2
+  retrieve_option(X, 1, 3),		%Option 1 to 3
   start_game('C'-X, 'H'-0);
   (write('\nInvalid option!\n'), cvp_menu).
   
@@ -50,11 +52,12 @@ cvc_menu :-
   nl,nl,
   write('Choose the computer level:'),nl,
   write('1) Easy'),nl,
-  write('2) Hard'),nl,
+  write('2) Medium'),nl,
+  write('3) Hard'),nl,
   write('PC1 --> '),
-  retrieve_option(X1, 1, 2),		%Option 1 or 2
+  retrieve_option(X1, 1, 3),		%Option 1 to 3
   (nl, write('PC2 --> '),
-   retrieve_option(X2, 1, 2),		%Option 1 or 2
+   retrieve_option(X2, 1, 3),		%Option 1 to 3
    (nl, start_game('C'-X1, 'C'-X2));
    (write('\nInvalid option!\n'), cvc_menu));
   (write('\nInvalid option!\n'), cvc_menu).

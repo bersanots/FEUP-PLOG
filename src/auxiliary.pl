@@ -32,3 +32,10 @@ insert_in_list([H|T], [H|NewT], Value, Index) :-
     Index > 1,
     NextIndex is Index - 1,
     insert_in_list(T, NewT, Value, NextIndex), !.
+	
+	
+/*concatenate lists inside a list*/
+concat([],[]).
+concat([H|T],L) :-
+    concat(T,L2),
+	append(H,L2,L).

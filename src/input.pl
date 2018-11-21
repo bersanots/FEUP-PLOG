@@ -3,7 +3,7 @@ retrieve_line(Line) :-
   get_char(Letter),
   peek_char(NextLineChar),
   skip_line, !,
-  NextLineChar=='\n',
+  NextLineChar=='\n',						%only one character typed
   letter(Line, Letter).						%Letter between A-I -> Line between 1-9		
   
   
@@ -16,7 +16,7 @@ retrieve_column(Column) :-
    peek_char(NextColChar),
    skip_line);
   skip_line),
-  NextColChar=='\n'.
+  NextColChar=='\n'.						%only one character typed
    
    
 /*read number from user's input
@@ -31,4 +31,4 @@ retrieve_option(Option, Min, Max) :-
    peek_char(NextChar),
    skip_line);
   skip_line),
-  NextChar=='\n'.
+  NextChar=='\n'.							%only one character typed

@@ -19,7 +19,7 @@ game_cycle(CurrentTab, ActivePlayerType, NextPlayerType, DrawCount) :-
    move(Move, Tab, Player, NewTab),
    ((Move = _X+_Y-_A+_B, NextCount is DrawCount + 1); NextCount is 0),			%check if a piece was slided or placed
    display_game(NewTab)), !,
-   ((game_over(NewTab-Player, Winner, NextCount),
+   ((game_over(NewTab-Player, Level, Winner, NextCount),
     ((Winner =:= 0, write('Pieces were slided for six turns in a row. The game ended in a DRAW.'));
      (write('End of the game. The winner is PLAYER '), translate(Winner, W), write(W))));  
     (((Player=:=1, NextPlayer is 2); NextPlayer is 1),
@@ -78,11 +78,14 @@ choose_move(Board, 1, Move, Player) :-
   valid_moves(Board, Player, ListOfMoves),
   random_member(Move, ListOfMoves).
   
-  
-/*choose best possible computer's move*/
+/*choose best offensive computer's move*/
 choose_move(Board, 2, Move, Player) :-
-  best_move(Board, Player, Move).
+  best_move(Board, 2, Player, Move).
 
+/*choose best possible computer's move*/
+choose_move(Board, 3, Move, Player) :-
+  best_move(Board, 3, Player, Move).
+  
   
 /*insert the move in the current board and return the resulting board*/
 move(Move, Board, Player, NewBoard) :-
@@ -94,13 +97,14 @@ move(Move, Board, Player, NewBoard) :-
  
  
 /*check if the player's move made him win, lose, or the match ended in a draw*/ 
-game_over(Board, Winner, DrawCount) :-
+game_over(Board, Level, Winner, DrawCount) :-
   Board = Tab-Player,
   ((Player =:= 1, OtherPlayer is 2); OtherPlayer is 1),
   ((DrawCount =:= 6, Winner is 0);				%players slided pieces 6 times in a row
-   (value(Tab, Player, Value), !,
+   (value(Tab, Level, Player, Value), !,
    ((Value =:= 0, Winner is OtherPlayer);		%has a surrounded piece
-    (Value =:= 11, Winner is Player)))).			%surrounded an opponent's piece
+    ((Level =:= 0; Level =:= 1; Level =:= 2), (Value =:= 7, Winner is Player));
+	(Level =:= 3, (Value =:= 11, Winner is Player))))).			%surrounded an opponent's piece
 
 /*check if there is at least one player piece on the board*/	
 is_slide_possible(Board, Player) :-
@@ -111,8 +115,8 @@ is_slide_possible(Board, Player) :-
   \+ length(PlayerCells, 0).
   
   
-/*find the Player's piece with the least amount of empty surrounding cells,
-starting on cell (Line,Column), and return that amount*/
+/*find the Player's piece with the least amount 
+of empty surrounding cells, and return that amount*/
 min_empty_surr_cells(Board, Player, Min) :- 
   findall(Num,											
 			(between(1,9,Line), between(1,9,Column),
@@ -120,7 +124,7 @@ min_empty_surr_cells(Board, Player, Min) :-
 			 surrounding_cells(Board, Line, Column, Cells, 6),		%find surrounding cells, maximum of 6
 			 num_empty_cells(Board, Cells, Num)),					%number of empty cells surrounding this piece	
           EmptySurrCells),
-  min_member(Min, EmptySurrCells).
+  ((min_member(N, EmptySurrCells), Min is N); (Min is 6)), !.
     
 	
 num_empty_cells(_Board, [], 0).  
