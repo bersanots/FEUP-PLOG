@@ -4,9 +4,9 @@
 - [x] Passar para um tipo de linguagem mais declarativo (tirar as setas, meter cuts).
 - [ ] Criar outra função com o mesmo nome para situações em que há condições em que um dos casos tem só uma ou duas linhas.
 - [ ] Usar repeat em vez de chamadas recursivas?
-- [ ] Organizar a ordem das funções.
-- [ ] Comentar o código.
-- [ ] Relatório.
+- [x] Organizar a ordem das funções.
+- [x] Comentar o código.
+- [x] Relatório.
 - [x] Ficheiro separado para funções auxiliares de matrizes.
 
 #### Visualização
@@ -34,15 +34,17 @@
 - [x] Fazer função para lista de jogadas possíveis/válidas.
 - [x] Apresentar mensagem se o jogador não tiver peças para mover.
 - [ ] Apresentar o número certo de colunas possíveis para cada linha escolhida.
-- [ ] Usar between e findall no has_pieces_surrounded.
+- [x] Usar between e findall no has_pieces_surrounded.
 - [x] Condição de terminação não funciona com move.
 
 ### Computer
 - [x] Bot não está a gerar todos os moves, só faz movimentos para a primeira ocorrência.
 - [x] Bot nem sempre faz bem os values das jogadas.
 - [x] Fazer função de avaliação do tabuleiro.
-- [ ] Fazer uma melhor função de avaliação do tabuleiro, meter o bot menos ofensivo, dar value a jogadas que reduzam o seu min_empty_surr_cells
+- [x] Fazer uma melhor função de avaliação do tabuleiro, meter o bot menos ofensivo, dar value a jogadas que reduzam o seu min_empty_surr_cells
        (IDEIA: Comparar o value de uma jogada defensiva, geralmente um move, com uma ofensiva, fazer a de maior valor).
 - [x] Fazer função de avaliação de uma jogada, através da avaliação do estado do tabuleiro se essa jogada for escolhida.
 - [x] Fazer função de escolha da jogada do computador, dependendo do nível de dificuldade.
 - [ ] Pensar nos casos em que jogar na primeira ocorrência tem o mesmo min_empty_surr_cells de jogar junto a outra peça, mas neste último reduz-se o segundo menor empty_surr_cells.
+- [ ] Dar mais valor aos casos em que se deixa de ter uma peça só com uma célula vizinha livre, após um move,
+	ou que se move uma peça quase a ser rodeada mas ela continua a estar quase rodeada, no entanto se o adversário jogar lá ele perde (situação segura).
